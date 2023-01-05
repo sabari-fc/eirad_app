@@ -28,13 +28,11 @@ class _CustomCalendarWidgetState extends State<CustomCalendarWidget> {
 
   @override
   void dispose() {
-    // TODO: implement dispose
     super.dispose();
     _selectedEvents.dispose();
   }
 
   List<EventModel> _getEventsForDay(DateTime day) {
-    // Implementation example
     return kEvents[day] ?? [];
   }
 
@@ -94,14 +92,15 @@ class _CustomCalendarWidgetState extends State<CustomCalendarWidget> {
               ),
             ),
             daysOfWeekStyle: DaysOfWeekStyle(
-                dowTextFormatter: (date, locale) =>
-                    DateFormat.E().format(date).substring(0, 2),
-                weekdayStyle: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                ),
-                weekendStyle: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                )),
+              dowTextFormatter: (date, locale) =>
+                  DateFormat.E().format(date).substring(0, 2),
+              weekdayStyle: const TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+              weekendStyle: const TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             availableCalendarFormats: const {
               CalendarFormat.month: 'Month',
             },

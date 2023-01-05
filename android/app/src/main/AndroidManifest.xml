@@ -2,7 +2,7 @@
     package="com.flycatchtech.eirad_app">
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
    <application
-        android:label="eirad_app"
+        android:label="Eirad Attendance"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
         <activity

@@ -23,8 +23,9 @@ class CheckInOutWidget extends StatelessWidget {
             AssetImage(icon),
           ),
         ),
+        const SizedBox(height: 16),
         Text(
-          time != null ? "--:--" : "--:--",
+          time != null ? time! : "--:--",
           style: Theme.of(context).textTheme.bodyLarge,
         ),
         Text(

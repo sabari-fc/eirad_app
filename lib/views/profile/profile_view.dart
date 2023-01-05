@@ -76,7 +76,7 @@ class _ProfileViewState extends State<ProfileView> {
             label: "Log Out",
             onTap: () {},
           ),
-          SizedBox(height: size.height * 0.1),
+          SizedBox(height: size.height * 0.09),
           const Text(
             "Copyright © 2022 Eirad. All rights reserved",
             style: TextStyle(

@@ -39,7 +39,7 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(child: screens[currentIndex]),
+      body: screens[currentIndex],
       backgroundColor: currentIndex == 0 ? AppColors.whiteColor : null,
       bottomNavigationBar: Container(
         padding: const EdgeInsets.symmetric(horizontal: 32),

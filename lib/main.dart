@@ -1,3 +1,4 @@
+import 'package:eirad_app/services/notification_service.dart';
 import 'package:eirad_app/utils/app_colors.dart';
 import 'package:eirad_app/views/login/login_view.dart';
 import 'package:eirad_app/views/on_boarding/on_boarding_view.dart';
@@ -8,8 +9,11 @@ import 'package:hive_flutter/hive_flutter.dart';
 void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  await LocalNotificationService().setup();
+
   await Hive.initFlutter();
   await Hive.openBox('initialStateBox');
+  await Hive.openBox('attendance');
 
   runApp(const EiradApp());
 }
@@ -43,7 +47,6 @@ class EntryScreen extends StatefulWidget {
 class _EntryScreenState extends State<EntryScreen> {
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     FlutterNativeSplash.remove();
   }

@@ -19,6 +19,7 @@ class TimeLabelWidget extends StatelessWidget {
           style: const TextStyle(
             color: AppColors.primaryColor,
             fontSize: 12,
+            fontFamily: 'SF Pro',
           ),
         ),
         Text(
