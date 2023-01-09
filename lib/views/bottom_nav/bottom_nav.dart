@@ -5,6 +5,7 @@ import 'package:eirad_app/views/home/home_screen.dart';
 import 'package:eirad_app/views/profile/profile_view.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:hive/hive.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class BottomNavScreen extends StatefulWidget {
@@ -16,6 +17,7 @@ class BottomNavScreen extends StatefulWidget {
 
 class _BottomNavScreenState extends State<BottomNavScreen> {
   int currentIndex = 0;
+  final box = Hive.box('tokenBox');
   List<Widget> screens = const [
     HomeScreen(),
     HistoryView(),
@@ -25,7 +27,6 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
   List<IconData> icons = [
     Icons.home_rounded,
     Icons.calendar_month,
-    // FontAwesomeIcons.user,
     Icons.account_circle_outlined,
   ];
   List<String> labels = ["Home", "History", "Profile"];
@@ -34,6 +35,7 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
   void initState() {
     super.initState();
     checkLocationAccess();
+    debugPrint("TOKEN: ${box.get('accessToken')}");
   }
 
   @override

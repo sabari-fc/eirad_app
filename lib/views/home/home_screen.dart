@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:eirad_app/services/notification_service.dart';
@@ -7,6 +8,7 @@ import 'package:eirad_app/views/home/widgets/check_in_out.dart';
 import 'package:eirad_app/views/home/widgets/time_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:http/http.dart';
 
 import 'package:intl/intl.dart';
 
@@ -20,17 +22,27 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen>
     with AutomaticKeepAliveClientMixin {
   late LocalNotificationService notificationService;
-  final box = Hive.box('attendance');
+  final attendanceBox = Hive.box('attendance');
+  final tokenBox = Hive.box('tokenBox');
   late bool checkedIn;
+  late String token;
   DateTime? checkIn, checkOut;
 
   @override
   void initState() {
     super.initState();
+    // Stores the saved token.
+    token = tokenBox.get('accessToken');
     notificationService = LocalNotificationService();
-    checkedIn = box.get('checkedIn') ?? false;
-    checkIn = box.get('check_in');
-    checkOut = box.get('check_out');
+
+    // Stores bool value of whether checked in or not.
+    checkedIn = attendanceBox.get('checkedIn') ?? false;
+
+    // Stores the check_in time.
+    checkIn = attendanceBox.get('check_in');
+
+    // Stores the check_out time.
+    checkOut = attendanceBox.get('check_out');
   }
 
   @override
@@ -101,19 +113,10 @@ class _HomeScreenState extends State<HomeScreen>
               const SizedBox(height: 48),
               InkWell(
                 onTap: () {
-                  box.put('checkedIn', checkedIn ? false : true);
-                  box.put(checkedIn ? "check_out" : 'check_in', DateTime.now());
-                  setState(() {
-                    checkedIn = !checkedIn;
-                    checkIn = box.get('check_in');
-                    checkOut = box.get('check_out');
-                  });
-                  notificationService.addNotification(
-                    !checkedIn ? "Check Out" : "Check In",
-                    "Today at ${DateFormat.jm().format(DateTime.now())}",
-                    DateTime.now().millisecondsSinceEpoch + 1000,
-                    channel: 'testing',
-                  );
+                  // Updates the status of checked in or not in local storage.
+                  attendanceBox.put('checkedIn', checkedIn ? false : true);
+
+                  markAttendance();
                 },
                 customBorder: const CircleBorder(),
                 child: Container(
@@ -135,20 +138,20 @@ class _HomeScreenState extends State<HomeScreen>
                       icon: 'assets/images/check_in.png',
                       label: "Check In",
                       time: checkIn != null
-                          ? DateFormat.jm().format(checkIn!)
+                          ? DateFormat.jm().format(checkIn!.toLocal())
                           : null,
                     ),
                     CheckInOutWidget(
                       icon: 'assets/images/check_out.png',
                       label: "Check Out",
                       time: checkOut != null
-                          ? DateFormat.jm().format(checkOut!)
+                          ? DateFormat.jm().format(checkOut!.toLocal())
                           : null,
                     ),
                     CheckInOutWidget(
                       icon: 'assets/images/total_hrs.png',
                       label: "Total Hrs",
-                      time: checkIn != null
+                      time: checkIn != null && checkOut != null
                           ? "${checkOut?.difference(checkIn!).inHours.toString().padLeft(2, "0")}:${checkOut?.difference(checkIn!).inMinutes.toString().padLeft(2, "0")}"
                           : null,
                     ),
@@ -163,6 +166,58 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   @override
-  // TODO: implement wantKeepAlive
   bool get wantKeepAlive => true;
+
+  void markAttendance() async {
+    final snackBar = ScaffoldMessenger.of(context);
+    final Map<String, String> body = {
+      "type": checkedIn ? "PUNCH_OUT" : "PUNCH_IN",
+    };
+    final response = await post(
+      Uri.parse("http://165.232.186.165:3000/attendances"),
+      body: jsonEncode(body),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    var data = jsonDecode(response.body);
+    debugPrint("$data");
+
+    bool isSuccess = data['success'];
+
+    if (isSuccess) {
+      setState(() {
+        checkedIn = !checkedIn;
+        checkIn = DateTime.parse(data['data'][0]['punchIn']);
+        checkOut = data['data'][0]['punchOut'] != null
+            ? DateTime.parse(data['data'][0]['punchOut'])
+            : null;
+      });
+      // Saves the time of check_in & check_out.
+      attendanceBox.put(
+        "check_out",
+        checkOut,
+      );
+      attendanceBox.put(
+        'check_in',
+        checkIn,
+      );
+      showNotification();
+    } else {
+      // Shows the error message.
+      snackBar.showSnackBar(SnackBar(content: Text(data['message'])));
+    }
+  }
+
+  void showNotification() {
+    notificationService.addNotification(
+      !checkedIn ? "Check Out" : "Check In",
+      "Today at ${DateFormat.jm().format(DateTime.now())}",
+      DateTime.now().millisecondsSinceEpoch + 1000,
+      channel: 'testing',
+    );
+  }
 }
